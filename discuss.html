@@ -1,0 +1,33 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Discuss</title>
+
+<style>
+ol {
+list-style: none;
+counter-reset: nesting;
+padding-left: 32px;
+}
+ol li {
+counter-increment: nesting;
+}
+ol li:before {
+content: counters(nesting, ".") ". ";
+}
+
+ul {
+list-style-type: none;
+padding-left: 32px;
+}
+</style>
+</head>
+<body>
+<script src="discuss.js"></script>
+<script>
+discuss();
+</script>
+
+</body>
+</html>
