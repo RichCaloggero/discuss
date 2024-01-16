@@ -18,6 +18,8 @@ class Discussion {
 get id () {return this.#id;}
 #students = [];
 get students () {return this.#students;}
+#parent = null;
+get parent () {return this.#parent;}
 
 constructor () {
 this.#id = generateId(this);
@@ -25,7 +27,7 @@ this.#id = generateId(this);
 
 addStudent (s) {this.#students.push(s);}
 add (obj) {
-return this.addStudent(new Student(obj.name));
+return this.addStudent(new Student(obj.name, this));
 } // add
 
 toString () {
@@ -34,6 +36,7 @@ return `<div class="discussion actor" id="${this.#id}">
 
 <div class="actions">
 <label>Add container labels <input type="checkbox" class="action immediate" data-action="addContainerLabels"></label>
+<label>add CSS info <input type="checkbox" class="action immediate" data-action="addCssInfo"></label>
 <button class="action" data-action="addStudent">add student</button>
 </div><!-- .actions -->
 
@@ -55,15 +58,18 @@ get name () {return this.#name;}
 get documents () {return this.#documents;}
 #fields = ["name"];
 get fields () {return this.#fields;}
+#parent = null;
+get parent () {return this.#parent;}
 
-constructor (name) {
+constructor (name, parent) {
 this.#id = generateId(this);
 this.#name = name;
+this.#parent = parent;
 } // constructor
 
 addDocument (d) {this.#documents.push(d);}
 add (obj) {
-return this.addDocument(new Document(obj.title, obj.url));
+return this.addDocument(new Document(obj.title, obj.url, this));
 } // add
 
 toString () {
@@ -93,18 +99,21 @@ get id () {return this.#id;}
 get comments () {return this.#comments;}
 #fields = ["title", "url"];
 get fields () {return this.#fields;}
+#parent = null;
+get parent () {return this.#parent;}
 
-constructor (title, url) {
+constructor (title, url, parent) {
 this.#id = generateId(this);
 this.#title = title;
 this.#url = url;
+this.#parent = parent;
 }
 
 upVote () {this.#votes += 1;}
 downVote () {if (this.#votes > 0) this.#votes -= 1;}
 addComment (c) {this.#comments.push(c);}
 add (obj) {
-return addComment(new Comment(obj.student, obj.text));
+return addComment(new Comment(obj.student, obj.text, this));
 } // add
 
 toString () {
@@ -138,19 +147,22 @@ get id () {return this.#id;}
 get replies () {return this.#replies;}
 #fields = ["student", "text"];
 get fields () {return this.#fields;}
+#parent = null;
+get parent () {return this.#parent;}
 
 
-constructor (author, text) {
+constructor (author, text, parent) {
 this.#id = generateId(this);
 this.#author = author;
 this.#text = text;
+this.#parent = parent;
 } // constructor
 
 upVote () {this.#votes += 1;}
 downVote () {if (this.#votes > 0) this.#votes -= 1;}
 addComment (c) {this.#replies.push(c);}
 add (obj) {
-return addComment(new Comment(obj.student, obj.text));
+return addComment(new Comment(obj.student, obj.text, this));
 } // add
 
 toString () {
@@ -175,6 +187,9 @@ ${this.#replies.length === 0? "" : toList(this.#replies, "ol")}
 
 
 /// operators
+
+
+
 
 function not(x) {return !x;}
 
@@ -229,19 +244,19 @@ const fieldNames = action === "addStudent" ? ["name"]
 : action === "addDocument"? ["title", "url"]
 : action === "addComment"? ["student", "text"]
 : null;
-const fields = [...form.querySelectorAll(".field")];
-fields.forEach(x => {
-x.hidden = not(fieldNames.includes(x.querySelector("[name]").name))
-});
-form.querySelector(".submit").hidden = false;
+console.log("fieldNames: ", fieldNames);
+
+const fields = [...form.querySelectorAll(".field")]
+.filter(x => {
+return not(x.hidden = not(fieldNames.includes(x.querySelector("[name]").name)))
+}); // filter
+console.log("fields: ", fields);
 
 form.addEventListener("submit", e => {
-const values = [...fields].filter(x => not(x.hidden))
-.map(x => x.querySelector("[name]").value);
+const values = fields.map(x => x.querySelector("[name]").value);
 actor.add(zip(fieldNames, values));
 
 fields.forEach(x => x.hidden = true);
-form.querySelector(".submit").hidden = true;
 
 dialog.close();
 rerender(actor).querySelector(".action").focus();
@@ -274,7 +289,7 @@ element.insertAdjacentHTML("afterBegin",
 <div class="field" hidden><label>URL: <input name="url"></label></div>
 <div class="field" hidden><label>Student: <select name="student"></select></label></div>
 <div class="field" hidden><label>Comment: <input name="comment"></label></div>
-<div class="submit" hidden><button type="submit">Add</button></div>
+<div class="submit"><button type="submit">Add</button></div>
 </form>
 </dialog>
 

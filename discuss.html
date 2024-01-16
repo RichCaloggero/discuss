@@ -24,9 +24,48 @@ padding-left: 32px;
 </style>
 </head>
 <body>
+<div role="status" id="status"></div>
+
 <script src="discuss.js"></script>
 <script>
 discuss();
+
+/*document.addEventListener("click", e => {
+statusMessage(describeElement(e.target));
+}); // eventListener
+*/
+
+function describeElement (x) {
+return describeTag(x.tagName) + describeId(x.id) + describeClass(x.className) + describeLayout(x);
+
+function describeTag (x) {return x.length > 0 ? x : "";}
+function describeId (x) { return x.length > 0 ? " #" + x.toString() : "";}
+function describeClass (x) { return x.length > 0 ? " ." + x.toString() : "";}
+
+function describeLayout (x) {
+return `${offsetLeft(x)}, ${offsetTop(x)}`;
+
+function offsetLeft (x) {return offset(x, "offsetLeft");}
+function offsetTop (x) {return offset(x, "offsetTop");}
+
+
+function offset (x, p) {
+let n = x[p];
+while (x.offsetParent !== document.body) {
+x = x.offsetParent;
+n += x[p];
+} // while
+
+return n;
+} // offset
+
+} describeLayout
+
+} // describeElement
+
+function statusMessage (text) {document.querySelector("#status").textContent = text;}
+function not(x) {return !x;}
+
 </script>
 
 </body>
