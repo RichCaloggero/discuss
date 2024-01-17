@@ -113,7 +113,7 @@ upVote () {this.#votes += 1;}
 downVote () {if (this.#votes > 0) this.#votes -= 1;}
 addComment (c) {this.#comments.push(c);}
 add (obj) {
-return addComment(new Comment(obj.student, obj.text, this));
+return this.addComment(new Comment(obj.author, obj.text, this));
 } // add
 
 toString () {
@@ -140,7 +140,7 @@ ${this.#comments.length === 0? "no comments" : toList(this.#comments, "ol")}
 class Comment {
 #id = "";
 get id () {return this.#id;}
-#author = null;
+#author = "";
 #text = "";
 #votes = 0;
 #replies = [];
@@ -162,12 +162,12 @@ upVote () {this.#votes += 1;}
 downVote () {if (this.#votes > 0) this.#votes -= 1;}
 addComment (c) {this.#replies.push(c);}
 add (obj) {
-return addComment(new Comment(obj.student, obj.text, this));
+return this.addComment(new Comment(obj.author, obj.text, this));
 } // add
 
 toString () {
 return `<div class="comment actor" id="${this.#id}">
-<div class="info">From ${this.#author.name} (${this.#votes} votes):
+<div class="info">From ${this.#author || "anonymous"} (${this.#votes} votes):
 <br>${this.#text}
 </div>
 
@@ -239,10 +239,11 @@ displayForm(actor, action, target);
 function displayForm (actor, action, target) {
 const dialog = document.querySelector("#get-info");
 const form = dialog.querySelector("form");
-dialog.hidden = false;
+form.reset();
+
 const fieldNames = action === "addStudent" ? ["name"]
 : action === "addDocument"? ["title", "url"]
-: action === "addComment"? ["student", "text"]
+: action === "addComment"? ["author", "text"]
 : null;
 console.log("fieldNames: ", fieldNames);
 
@@ -251,6 +252,12 @@ const fields = [...form.querySelectorAll(".field")]
 return not(x.hidden = not(fieldNames.includes(x.querySelector("[name]").name)))
 }); // filter
 console.log("fields: ", fields);
+
+populateAuthorField(form.querySelector("[name='author']"), discussion.students.map(x => x.name));
+
+dialog.hidden = false;
+dialog.showModal();
+fields[0].focus();
 
 form.addEventListener("submit", e => {
 const values = fields.map(x => x.querySelector("[name]").value);
@@ -263,14 +270,20 @@ rerender(actor).querySelector(".action").focus();
 },
 {once: true}); // submit
 
-dialog.showModal();
-fields[0].focus();
+function populateAuthorField (select, names) {
+names.forEach(x => {
+const option = document.createElement("option");
+option.textContent = option.value = x;
+select.add(option);
+});
+} // populateAuthorField
 } // displayForm
 
 
 function rerender (actor) {
 const element = document.querySelector(`#${actor.id}`);
 console.log("rerendering ", actor, element);
+debugger;
 element.insertAdjacentHTML("beforeBegin", actor.toString());
 const result = element.previousElementSibling;
 element.remove();
@@ -287,8 +300,8 @@ element.insertAdjacentHTML("afterBegin",
 <div class="field" hidden><label>Name: <input name="name"></label></div>
 <div class="field" hidden><label>Title: <input name="title"></label></div>
 <div class="field" hidden><label>URL: <input name="url"></label></div>
-<div class="field" hidden><label>Student: <select name="student"></select></label></div>
-<div class="field" hidden><label>Comment: <input name="comment"></label></div>
+<div class="field" hidden><label>Author: <select name="author"></select></label></div>
+<div class="field" hidden><label>Comment: <br><textarea rows="10" cols="80" name="text"></textarea></label></div>
 <div class="submit"><button type="submit">Add</button></div>
 </form>
 </dialog>
@@ -314,6 +327,6 @@ discussion.addStudent(Mary);
 Rich.addDocument(new Document("Numbering nested lists via CSS", "https://example.com/nested.html"));
 Rich.addDocument(new Document("Navigation of deeply nested structures using HTML trees", "https://example.com/trees.html"));
 
-Rich.documents[1].addComment(new Comment(Mary, "HTML trees are cool, but a pain to construct."));
-Rich.documents[1].comments[0].addComment(new Comment(Rich, "but in the right circumstance they can afford better UX for screen reader users"));
+Rich.documents[1].addComment(new Comment(Mary.name, "HTML trees are cool, but a pain to construct."));
+Rich.documents[1].comments[0].addComment(new Comment(Rich.name, "but in the right circumstance they can afford better UX for screen reader users"));
 
