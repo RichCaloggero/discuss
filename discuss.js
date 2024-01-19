@@ -35,8 +35,7 @@ return `<div class="discussion actor" id="${this.#id}">
 <h1 class="info">Discussion</h1>
 
 <div class="actions">
-<label>Add container labels <input type="checkbox" class="action immediate" data-action="addContainerLabels"></label>
-<label>add CSS info <input type="checkbox" class="action immediate" data-action="addCssInfo"></label>
+<!--<label>Add container labels <input type="checkbox" class="action immediate" data-action="addContainerLabels"></label>-->
 <button class="action" data-action="addStudent">add student</button>
 </div><!-- .actions -->
 
